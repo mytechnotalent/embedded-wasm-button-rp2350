@@ -1,0 +1,4 @@
+# Override the parent workspace target for host-side tests.
+
+[build]
+target = "aarch64-apple-darwin"

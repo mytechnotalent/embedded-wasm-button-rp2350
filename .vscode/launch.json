@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "probe-rs-debug",
+            "request": "launch",
+            "name": "probe-rs Debug",
+            "preLaunchTask": "cargo build --profile debuggable",
+            "chip": "RP235x",
+            "flashingConfig": {
+                "flashingEnabled": false,
+                "haltAfterReset": false
+            },
+            "coreConfigs": [
+                {
+                    "coreIndex": 0,
+                    "programBinary": "${workspaceFolder}/target/thumbv8m.main-none-eabihf/debuggable/embedded-wasm-button-rp2350.elf",
+                    "svdFile": "${workspaceFolder}/.vscode/RP2350.svd"
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,11 @@
+# WASM-specific linker configuration for minimal memory usage.
+
+[target.wasm32-unknown-unknown]
+rustflags = [
+    "-C",
+    "link-arg=-z",
+    "-C",
+    "link-arg=stack-size=4096",
+    "-C",
+    "link-arg=--initial-memory=65536",
+]

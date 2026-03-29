@@ -1,0 +1,21 @@
+package embedded:platform;
+
+interface gpio {
+    set-high: func(pin: u32);
+    set-low: func(pin: u32);
+}
+
+interface button {
+    is-pressed: func(pin: u32) -> bool;
+}
+
+interface timing {
+    delay-ms: func(ms: u32);
+}
+
+world button-led {
+    import gpio;
+    import button;
+    import timing;
+    export run: func();
+}

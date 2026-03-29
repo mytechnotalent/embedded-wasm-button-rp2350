@@ -1,0 +1,18 @@
+[package]
+edition = "2024"
+name = "wasm-tests"
+version = "0.1.0"
+license = "MIT"
+publish = false
+
+[dependencies]
+wasmtime = { version = "43", default-features = false, features = [
+    "cranelift",
+    "runtime",
+    "pulley",
+    "all-arch",
+    "component-model",
+] }
+
+[build-dependencies]
+wit-component = "0.245"

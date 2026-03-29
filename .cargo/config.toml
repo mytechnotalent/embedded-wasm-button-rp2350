@@ -1,0 +1,17 @@
+# Cargo Configuration for RP2350 (Pico 2) ARM Cortex-M33 target.
+
+[build]
+target = "thumbv8m.main-none-eabihf"
+
+[target.thumbv8m.main-none-eabihf]
+rustflags = [
+    "-C",
+    "link-arg=--nmagic",
+    "-C",
+    "link-arg=-Tlink.x",
+    "-C",
+    "target-cpu=cortex-m33",
+]
+
+# Use picotool for flashing via `cargo run --release`.
+runner = "picotool load -u -v -x -t elf"

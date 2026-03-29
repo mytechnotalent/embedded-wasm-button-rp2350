@@ -1,0 +1,35 @@
+[package]
+edition = "2024"
+name = "embedded-wasm-button-rp2350"
+version = "0.1.0"
+license = "MIT"
+
+[dependencies]
+cortex-m = "0.7"
+cortex-m-rt = "0.7"
+critical-section = "1.2"
+embedded-hal = "1.0.0"
+embedded-alloc = "0.7"
+fugit = "0.3"
+nb = "1.1"
+wasmtime = { version = "43", default-features = false, features = [
+    "runtime",
+    "pulley",
+    "component-model",
+] }
+
+[target."thumbv8m.main-none-eabihf".dependencies]
+rp235x-hal = { version = "0.3", features = ["rt", "critical-section-impl"] }
+
+[build-dependencies]
+wasmtime = { version = "43", default-features = false, features = [
+    "cranelift",
+    "pulley",
+    "all-arch",
+    "component-model",
+] }
+wit-component = "0.245"
+
+[profile.debuggable]
+inherits = "release"
+debug = 2

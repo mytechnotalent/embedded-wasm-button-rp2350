@@ -1,0 +1,47 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "cargo build --profile debuggable",
+            "type": "shell",
+            "command": "cargo build --profile debuggable && cp target/thumbv8m.main-none-eabihf/debuggable/embedded-wasm-button-rp2350 target/thumbv8m.main-none-eabihf/debuggable/embedded-wasm-button-rp2350.elf",
+            "options": {
+                "env": {
+                    "RUSTFLAGS": "-C link-arg=--nmagic -C link-arg=-Tlink.x -C target-cpu=cortex-m33 -C force-frame-pointers=yes -C force-unwind-tables=yes"
+                }
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$rustc"
+            ]
+        },
+        {
+            "label": "flash debuggable",
+            "type": "shell",
+            "command": "probe-rs download --chip RP235x ${workspaceFolder}/target/thumbv8m.main-none-eabihf/debuggable/embedded-wasm-button-rp2350.elf",
+            "dependsOn": "cargo build --profile debuggable",
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
+            "label": "cargo build (release)",
+            "type": "shell",
+            "command": "cargo build --release",
+            "group": "build",
+            "problemMatcher": [
+                "$rustc"
+            ]
+        },
+        {
+            "label": "flash release",
+            "type": "shell",
+            "command": "probe-rs download --chip RP235x ${workspaceFolder}/target/thumbv8m.main-none-eabihf/release/embedded-wasm-button-rp2350",
+            "dependsOn": "cargo build (release)",
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        }
+    ]
+}
