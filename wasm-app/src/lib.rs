@@ -14,19 +14,13 @@
 // Enable the global allocator for heap-backed collections.
 extern crate alloc;
 
-/// Panic handler signature type.
-use core::panic::PanicInfo;
+use core::panic::PanicInfo; // Panic handler signature type.
 
 /// Global heap allocator required by the canonical ABI's `cabi_realloc`.
 #[global_allocator]
 static ALLOC: dlmalloc::GlobalDlmalloc = dlmalloc::GlobalDlmalloc;
 
-/// Host-provided button input imports.
-use embedded::platform::button;
-/// Host-provided GPIO output imports.
-use embedded::platform::gpio;
-/// Host-provided timing imports.
-use embedded::platform::timing;
+use embedded::platform::{button, gpio, timing}; // Host-provided button, GPIO, and timing imports.
 
 // Generate guest-side bindings for the `button-led` WIT world.
 wit_bindgen::generate!({
@@ -34,7 +28,7 @@ wit_bindgen::generate!({
     path: "../wit",
 });
 
-/// WASM guest component implementing the `button` world.
+/// WASM guest component implementing the `button-led` world.
 struct ButtonApp;
 
 // Register `ButtonApp` as the component's exported implementation.

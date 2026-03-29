@@ -4,41 +4,42 @@
 //!
 //! # Integration Tests for WASM Button Component
 //!
-//! Verifies the WASM button component's behavior, imports, exports, and
-//! host call patterns using a mock host state that records all WIT calls.
+//! Validates that the compiled WASM component loads correctly through the
+//! Component Model, implements the expected WIT interfaces
+//! (`embedded:platform/gpio`, `embedded:platform/button`, and
+//! `embedded:platform/timing`), exports the `run` function, and polls
+//! the button to control the LED with the correct pin targeting and delay
+//! values.
 
-/// Component Model loader and linker traits.
 use wasmtime::component::{Component, HasSelf};
-/// Wasmtime runtime core types.
 use wasmtime::{Config, Engine, Store};
 
-// Generate host-side bindings for the `button-led` WIT world.
 wasmtime::component::bindgen!({
     world: "button-led",
     path: "../wit",
 });
 
-/// Precompiled WASM component binary for testing.
+/// Compiled WASM button component embedded at build time.
 const WASM_BINARY: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/button.wasm"));
 
-/// Enumeration of all possible host calls recorded during test execution.
+/// Represents a single host function call recorded during WASM execution.
 #[derive(Debug, PartialEq)]
 enum HostCall {
-    /// A `set-high` call with the given GPIO pin number.
+    /// The `gpio.set-high` WIT function was called with the given pin.
     GpioSetHigh(u32),
-    /// A `set-low` call with the given GPIO pin number.
+    /// The `gpio.set-low` WIT function was called with the given pin.
     GpioSetLow(u32),
-    /// An `is-pressed` call with the given GPIO pin number.
+    /// The `button.is-pressed` WIT function was called with the given pin.
     ButtonIsPressed(u32),
-    /// A `delay-ms` call with the given duration in milliseconds.
+    /// The `timing.delay-ms` WIT function was called with the given value.
     DelayMs(u32),
 }
 
-/// Mock host state that records all WIT calls for post-execution verification.
+/// Host state that records all function calls and provides simulated button input.
 struct TestHostState {
-    /// Ordered log of all host calls made by the WASM component.
+    /// Ordered log of every host function call.
     calls: Vec<HostCall>,
-    /// Simulated button pressed state returned by `is_pressed`.
+    /// Simulated button pressed state returned by `button.is-pressed`.
     button_pressed: bool,
 }
 
@@ -169,7 +170,10 @@ fn build_test_linker(engine: &Engine) -> wasmtime::component::Linker<TestHostSta
 ///
 /// Panics if fuel allocation fails.
 fn create_fueled_store(engine: &Engine, fuel: u64, button_pressed: bool) -> Store<TestHostState> {
-    let state = TestHostState { calls: Vec::new(), button_pressed };
+    let state = TestHostState {
+        calls: Vec::new(),
+        button_pressed,
+    };
     let mut store = Store::new(engine, state);
     store.set_fuel(fuel).expect("set fuel");
     store
@@ -217,10 +221,16 @@ fn test_wasm_exports_run_function() {
     let engine = create_default_engine();
     let component = compile_component(&engine);
     let linker = build_test_linker(&engine);
-    let state = TestHostState { calls: Vec::new(), button_pressed: false };
+    let state = TestHostState {
+        calls: Vec::new(),
+        button_pressed: false,
+    };
     let mut store = Store::new(&engine, state);
     let instance = ButtonLed::instantiate(&mut store, &component, &linker);
-    assert!(instance.is_ok(), "component must instantiate with run export");
+    assert!(
+        instance.is_ok(),
+        "component must instantiate with run export"
+    );
 }
 
 /// Verifies that the component imports `gpio`, `button`, and `timing` interfaces.

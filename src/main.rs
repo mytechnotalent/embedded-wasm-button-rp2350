@@ -392,7 +392,7 @@ fn run_wasm() -> ! {
     }
 }
 
-/// Firmware entry point that initializes hardware and runs the WASM button app.
+/// Firmware entry point that initializes hardware and runs the WASM button.
 #[hal::entry]
 fn main() -> ! {
     init_heap();
