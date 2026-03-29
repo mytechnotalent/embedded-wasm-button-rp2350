@@ -1075,6 +1075,22 @@ The WASM guest's panic handler. Unlike the firmware's panic handler, it cannot w
 9. Each `delay_ms` call crosses the boundary and spins for the specified number of CPU cycles
 10. The button controls the LED. Forever.
 
+## Documentation Links
+
+The following references cover every major crate and specification used in this project:
+
+- [rp235x-hal](https://docs.rs/rp235x-hal) — RP2350 hardware abstraction layer (GPIO, UART, clocks)
+- [Wasmtime](https://docs.wasmtime.dev) — WebAssembly runtime documentation ([API docs](https://docs.rs/wasmtime))
+- [WIT / Component Model](https://component-model.bytecodealliance.org) — the Component Model specification ([wit-bindgen API docs](https://docs.rs/wit-bindgen))
+- [cortex-m](https://docs.rs/cortex-m) — low-level Cortex-M access (interrupts, registers, intrinsics)
+- [cortex-m-rt](https://docs.rs/cortex-m-rt) — Cortex-M startup runtime (reset vector, memory init)
+- [embedded-hal](https://docs.rs/embedded-hal) — hardware abstraction traits (GPIO, UART, SPI, I2C)
+- [embedded-alloc](https://docs.rs/embedded-alloc) — heap allocator for `no_std` environments
+- [Cranelift](https://cranelift.dev) — compiler backend used for AOT WASM compilation ([API docs](https://docs.rs/cranelift-codegen))
+- [Pulley](https://docs.rs/pulley-interpreter) — Wasmtime's portable interpreter bytecode format
+- [fugit](https://docs.rs/fugit) — type-safe time units for embedded (baud rates, clock frequencies)
+- [critical-section](https://docs.rs/critical-section) — cross-platform interrupt-safe mutual exclusion
+
 ## License
 
 MIT
