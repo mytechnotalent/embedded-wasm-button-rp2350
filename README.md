@@ -1,5 +1,5 @@
 # Embedded WASM Button
-## WebAssembly Component Model on RP2350 Pico 2
+## WebAssembly Button on RP2350 Pico 2
 
 > Part of the [embedded-wasm](https://github.com/mytechnotalent/embedded-wasm) collection — a set of repos that runs a WebAssembly Component Model runtime (Wasmtime + Pulley interpreter) directly on the RP2350 bare-metal with hardware capabilities exposed through WIT.
 
