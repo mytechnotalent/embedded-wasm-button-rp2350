@@ -39,38 +39,38 @@ This project demonstrates that WebAssembly is not just for browsers — it can r
 ## Architecture
 
 ```
-┌───────────────────────────────────────────────────────┐
-│                 RP2350 (Pico 2)                       │
-│                                                       │
-│  ┌───────────────────────────────────────────────┐    │
-│  │            Firmware (src/main.rs)             │    │
-│  │                                               │    │
-│  │  ┌─────────┐  ┌────────┐  ┌───────────┐       │    │
-│  │  │  Heap   │  │Wasmtime│  │ WIT Host  │       │    │
-│  │  │ 256 KiB │  │ Pulley │  │ Trait Impl│       │    │
-│  │  └─────────┘  └───┬────┘  └─────┬─────┘       │    │
-│  │                   │             │             │    │
-│  │  ┌────────┐  ┌────┴─────────────┴──────────┐  │    │
-│  │  │ led.rs │  │ Pulley Bytecode (.cwasm)    │  │    │
-│  │  │button  │  │                             │  │    │
-│  │  │  .rs   │  │  imports:                   │  │    │
-│  │  │uart.rs │  │    embedded:platform/gpio   │  │    │
-│  │  └────────┘  │      set-high(pin: u32)     │  │    │
-│  │              │      set-low(pin: u32)      │  │    │
+┌────────────────────────────────────────────────────────┐
+│                 RP2350 (Pico 2)                        │
+│                                                        │
+│  ┌────────────────────────────────────────────────┐    │
+│  │            Firmware (src/main.rs)              │    │
+│  │                                                │    │
+│  │  ┌─────────┐  ┌────────┐  ┌───────────┐        │    │
+│  │  │  Heap   │  │Wasmtime│  │ WIT Host  │        │    │
+│  │  │ 256 KiB │  │ Pulley │  │ Trait Impl│        │    │
+│  │  └─────────┘  └───┬────┘  └─────┬─────┘        │    │
+│  │                   │             │              │    │
+│  │  ┌────────┐  ┌────┴─────────────┴───────────┐  │    │
+│  │  │ led.rs │  │ Pulley Bytecode (.cwasm)     │  │    │
+│  │  │button  │  │                              │  │    │
+│  │  │  .rs   │  │  imports:                    │  │    │
+│  │  │uart.rs │  │    embedded:platform/gpio    │  │    │
+│  │  └────────┘  │      set-high(pin: u32)      │  │    │
+│  │              │      set-low(pin: u32)       │  │    │
 │  │              │    embedded:platform/button  │  │    │
 │  │              │      is-pressed(pin) -> bool │  │    │
 │  │              │    embedded:platform/timing  │  │    │
-│  │              │      delay-ms(ms: u32)      │  │    │
-│  │              │                             │  │    │
-│  │              │  exports:                   │  │    │
-│  │              │    run()                    │  │    │
-│  │              └─────────────────────────────┘  │    │
-│  └───────────────────────────────────────────────┘    │
-│                                                       │
-│  GPIO15 (Button) -> button::is_pressed(pin) -> bool   │
-│  GPIO25 (Onboard LED) -> led::set_high/set_low(pin)   │
-│  GPIO0/1 (UART0) -> uart::write_msg (diag)            │
-└───────────────────────────────────────────────────────┘
+│  │              │      delay-ms(ms: u32)       │  │    │
+│  │              │                              │  │    │
+│  │              │  exports:                    │  │    │
+│  │              │    run()                     │  │    │
+│  │              └──────────────────────────────┘  │    │
+│  └────────────────────────────────────────────────┘    │
+│                                                        │
+│  GPIO15 (Button) -> button::is_pressed(pin) -> bool    │
+│  GPIO25 (Onboard LED) -> led::set_high/set_low(pin)    │
+│  GPIO0/1 (UART0) -> uart::write_msg (diag)             │
+└────────────────────────────────────────────────────────┘
 ```
 
 ## Project Structure
