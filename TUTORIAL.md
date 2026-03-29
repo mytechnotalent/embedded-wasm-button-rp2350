@@ -1,34 +1,23 @@
-# Tutorial: Line-by-Line Walkthrough
+# Tutorial: Embedded WASM Button — A Complete Code Walkthrough
 
-This document is a complete, function-by-function walkthrough of every source
-file in the **embedded-wasm-button-rp2350** project. It is designed to be read
-from beginning to end as a standalone tutorial — no prior knowledge of the
-codebase is assumed.
+This tutorial is a line-by-line, function-by-function guide through every Rust source file in the **embedded-wasm-button-rp2350** project. By the end, you will understand how a WebAssembly component is compiled, deployed, and executed on an RP2350 microcontroller to read a button and control an LED — entirely in bare-metal Rust with no operating system.
 
-The project runs a WebAssembly Component Model runtime (Wasmtime with the Pulley
-interpreter) directly on the RP2350 bare-metal. A precompiled WASM component
-reads a button on GPIO15 and mirrors its state to the onboard LED on GPIO25
-through typed WIT interfaces.
+The walkthrough follows this order:
 
-We will walk through files in this order:
-
-1. **WIT contract** — the typed interfaces the host provides and the guest implements
-2. **platform.rs** — thread-local storage glue for Wasmtime on bare-metal
-3. **uart.rs** — UART0 driver for diagnostic output
-4. **led.rs** — GPIO output driver for controlling the LED
-5. **button.rs** — GPIO input driver for reading the button
-6. **main.rs** — firmware entry point that ties everything together
-7. **build.rs** — AOT compilation pipeline that cross-compiles WASM to Pulley bytecode
-8. **wasm-app/src/lib.rs** — the WASM guest component (application logic)
+1. [WIT Interface Definition](#1-wit-interface-definition-witworldwit) — the contract between guest and host
+2. [Platform Glue](#2-platform-glue-srcplatformrs) — thread-local storage stubs for Wasmtime
+3. [UART Driver](#3-uart-driver-srcuartrs) — serial initialization and I/O
+4. [LED / GPIO Output Driver](#4-led--gpio-output-driver-srcledrs) — output pin control for the LED
+5. [Button / GPIO Input Driver](#5-button--gpio-input-driver-srcbuttonrs) — input pin reading for the button
+6. [Firmware Entry Point](#6-firmware-entry-point-srcmainrs) — hardware init, WASM runtime, panic handler
+7. [Build Script](#7-build-script-buildrs) — AOT compilation pipeline
+8. [WASM Guest Application](#8-wasm-guest-application-wasm-appsrclibrs) — the button component itself
 
 ---
 
-## 1. The WIT Contract (`wit/world.wit`)
+## 1. WIT Interface Definition (`wit/world.wit`)
 
-Everything starts with the WIT (WebAssembly Interface Type) definition. This
-file declares the typed interface contract between the firmware (host) and the
-WASM component (guest). The guest calls into the host to interact with hardware;
-the host provides the actual GPIO control and timing.
+Before any Rust code, the project defines a **WIT (WebAssembly Interface Type)** file. WIT is a language-neutral interface description that the WebAssembly Component Model uses to type-check function calls between a host (the firmware) and a guest (the WASM module).
 
 ```wit
 package embedded:platform;
@@ -941,7 +930,7 @@ be encoded and cross-compiled.
 
 ---
 
-## 8. WASM Guest Component (`wasm-app/src/lib.rs`)
+## 8. WASM Guest Application (`wasm-app/src/lib.rs`)
 
 The guest component is the application logic that runs inside Wasmtime on the
 device. It is compiled to `wasm32-unknown-unknown` and knows nothing about the
