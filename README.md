@@ -25,6 +25,8 @@ A pure Embedded Rust project that runs a **WebAssembly Component Model** runtime
 - [Tutorial](#tutorial)
 - [License](#license)
 
+<br>
+
 ## Overview
 
 This project demonstrates that WebAssembly is not just for browsers — it can run on a microcontroller with 512 KB of RAM. The firmware uses [Wasmtime](https://github.com/bytecodealliance/Wasmtime) with the **Pulley interpreter** (a portable, `no_std`-compatible WebAssembly runtime) and the **WebAssembly Component Model** to execute a precompiled WASM component that polls a button on GPIO15 every 10ms and mirrors its state to the onboard LED on GPIO25.
