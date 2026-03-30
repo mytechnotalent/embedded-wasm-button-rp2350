@@ -5,6 +5,8 @@
 
 A pure Embedded Rust project that runs a **WebAssembly Component Model** runtime (Wasmtime + Pulley interpreter) directly on the RP2350 (Raspberry Pi Pico 2) bare-metal. Hardware capabilities are exposed through typed **WIT** (WebAssembly Interface Type) definitions (`embedded:platform/gpio`, `embedded:platform/button`, and `embedded:platform/timing`), enabling hardware-agnostic guest programs that are AOT-compiled to Pulley bytecode and executed on the device to read a button on GPIO15 and mirror its state to the onboard LED on GPIO25 — no operating system and no standard library.
 
+<br>
+
 ## Table of Contents
 
 - [Overview](#overview)
@@ -484,6 +486,8 @@ Rebuild and reflash — only the WASM component changes.
 ## Tutorial
 
 A complete line-by-line code walkthrough is available in [TUTORIAL.md](TUTORIAL.md). It covers every Rust source file and every function in the project, written as a teaching resource for learning embedded WASM development from scratch.
+
+<br>
 
 ## License
 
