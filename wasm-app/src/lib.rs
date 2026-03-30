@@ -2,7 +2,7 @@
 //!
 //! Copyright (c) 2026 Kevin Thomas
 //!
-//! # WASM Button Component
+//! # Wasm Button Component
 //!
 //! A minimal WebAssembly component that reads a button on GPIO15 and
 //! controls the onboard LED on GPIO25 of an RP2350 Pico 2 by calling
@@ -28,7 +28,7 @@ wit_bindgen::generate!({
     path: "../wit",
 });
 
-/// WASM guest component implementing the `button-led` world.
+/// Wasm guest component implementing the `button-led` world.
 struct ButtonApp;
 
 // Register `ButtonApp` as the component's exported implementation.
@@ -52,11 +52,11 @@ impl Guest for ButtonApp {
     }
 }
 
-/// Panic handler for the WASM environment that halts in an infinite loop.
+/// Panic handler for the Wasm environment that halts in an infinite loop.
 ///
 /// # Arguments
 ///
-/// * `_info` - Panic information (unused in the WASM environment).
+/// * `_info` - Panic information (unused in the Wasm environment).
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     loop {

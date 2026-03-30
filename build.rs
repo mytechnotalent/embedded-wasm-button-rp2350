@@ -4,8 +4,8 @@
 //!
 //! # Build Script for embedded-wasm-button-rp2350 Firmware
 //!
-//! Sets up the RP2350 linker script, compiles the WASM button application,
-//! and AOT-compiles the WASM binary to Pulley bytecode for the RP2350.
+//! Sets up the RP2350 linker script, compiles the Wasm button application,
+//! and AOT-compiles the Wasm binary to Pulley bytecode for the RP2350.
 
 use std::fs::File;
 use std::io::Write;
@@ -44,19 +44,19 @@ fn write_linker_script(out: &Path) {
     f.write_all(memory_x).unwrap();
 }
 
-/// Compiles the WASM button application for the `wasm32-unknown-unknown` target.
+/// Compiles the Wasm button application for the `wasm32-unknown-unknown` target.
 ///
 /// # Panics
 ///
-/// Panics if the WASM compilation fails.
+/// Panics if the Wasm compilation fails.
 fn compile_wasm_app() {
     let status = Command::new("cargo")
         .args(["build", "--release", "--target", "wasm32-unknown-unknown"])
         .current_dir("wasm-app")
         .env_remove("CARGO_ENCODED_RUSTFLAGS")
         .status()
-        .expect("failed to build WASM app");
-    assert!(status.success(), "WASM app compilation failed");
+        .expect("failed to build Wasm app");
+    assert!(status.success(), "Wasm app compilation failed");
 }
 
 /// Creates a wasmtime engine configured to cross-compile for Pulley 32-bit.
@@ -86,10 +86,10 @@ fn create_pulley_engine() -> Engine {
     Engine::new(&config).expect("create Pulley engine")
 }
 
-/// Encodes the core WASM module as a component and AOT-compiles to Pulley bytecode.
+/// Encodes the core Wasm module as a component and AOT-compiles to Pulley bytecode.
 ///
-/// Reads the core WASM binary (which contains `wit-bindgen` component type
-/// metadata), wraps it as a WASM component via `ComponentEncoder`, then
+/// Reads the core Wasm binary (which contains `wit-bindgen` component type
+/// metadata), wraps it as a Wasm component via `ComponentEncoder`, then
 /// AOT-compiles the component to Pulley bytecode via Cranelift.
 ///
 /// # Arguments
@@ -101,7 +101,7 @@ fn create_pulley_engine() -> Engine {
 /// Panics if encoding, compilation, or serialization fails.
 fn compile_wasm_to_pulley(out: &Path) {
     let wasm_path = "wasm-app/target/wasm32-unknown-unknown/release/wasm_app.wasm";
-    let wasm_bytes = std::fs::read(wasm_path).expect("read WASM binary");
+    let wasm_bytes = std::fs::read(wasm_path).expect("read Wasm binary");
     let component_bytes = ComponentEncoder::default()
         .module(&wasm_bytes)
         .expect("set core module")
@@ -124,7 +124,7 @@ fn print_rerun_triggers() {
     println!("cargo:rerun-if-changed=wit/world.wit");
 }
 
-/// Build script entry point that sets up linker scripts and compiles the WASM app.
+/// Build script entry point that sets up linker scripts and compiles the Wasm app.
 fn main() {
     let out = setup_output_dir();
     write_linker_script(&out);

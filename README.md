@@ -1,4 +1,4 @@
-# Embedded WASM Button
+# Embedded Wasm Button
 ## WebAssembly Button on RP2350 Pico 2
 
 > Part of the [embedded-wasm](https://github.com/mytechnotalent/embedded-wasm) collection — a set of repos that runs a WebAssembly Component Model runtime (Wasmtime + Pulley interpreter) directly on the RP2350 bare-metal with hardware capabilities exposed through WIT.
@@ -29,14 +29,14 @@ A pure Embedded Rust project that runs a **WebAssembly Component Model** runtime
 
 ## Overview
 
-This project demonstrates that WebAssembly is not just for browsers — it can run on a microcontroller with 512 KB of RAM. The firmware uses [Wasmtime](https://github.com/bytecodealliance/Wasmtime) with the **Pulley interpreter** (a portable, `no_std`-compatible WebAssembly runtime) and the **WebAssembly Component Model** to execute a precompiled WASM component that polls a button on GPIO15 every 10ms and mirrors its state to the onboard LED on GPIO25.
+This project demonstrates that WebAssembly is not just for browsers — it can run on a microcontroller with 512 KB of RAM. The firmware uses [Wasmtime](https://github.com/bytecodealliance/Wasmtime) with the **Pulley interpreter** (a portable, `no_std`-compatible WebAssembly runtime) and the **WebAssembly Component Model** to execute a precompiled Wasm component that polls a button on GPIO15 every 10ms and mirrors its state to the onboard LED on GPIO25.
 
 **Key properties:**
 
 - **Component Model** — typed WIT interfaces replace raw `env` imports; hardware-agnostic guest programs
 - **Pure Rust** — zero C code, zero C bindings, zero FFI
 - **Minimal unsafe** — only unavoidable sites (heap init, boot metadata, component deserialize, panic handler UART)
-- **AOT compilation** — WASM is compiled to Pulley bytecode on the host, no compilation on device
+- **AOT compilation** — Wasm is compiled to Pulley bytecode on the host, no compilation on device
 - **Industry-standard runtime** — Wasmtime is the reference WebAssembly implementation
 - **UART diagnostics** — LED state changes are logged to UART0, panics output file/message over serial
 
@@ -91,17 +91,17 @@ embedded-wasm-button-rp2350/
 │   └── RP2350.svd         # RP2350 SVD for register view in debugger
 ├── wit/
 │   └── world.wit          # WIT interface definitions (embedded:platform)
-├── wasm-app/              # WASM button component (compiled to .wasm)
+├── wasm-app/              # Wasm button component (compiled to .wasm)
 │   ├── .cargo/
-│   │   └── config.toml    # WASM linker flags (minimal memory)
+│   │   └── config.toml    # Wasm linker flags (minimal memory)
 │   ├── Cargo.toml
 │   └── src/
 │       └── lib.rs         # Button logic: wit-bindgen Guest trait, exports run()
-├── wasm-tests/            # Integration tests for the WASM component
+├── wasm-tests/            # Integration tests for the Wasm component
 │   ├── .cargo/
 │   │   └── config.toml    # Host target override for tests
 │   ├── Cargo.toml
-│   ├── build.rs           # Encodes core WASM as component via ComponentEncoder
+│   ├── build.rs           # Encodes core Wasm as component via ComponentEncoder
 │   └── tests/
 │       └── integration.rs # 19 tests: component loading, WIT, button, pin, size
 ├── src/
@@ -110,7 +110,7 @@ embedded-wasm-button-rp2350/
 │   ├── led.rs             # GPIO output driver — multi-pin, keyed by pin number
 │   ├── uart.rs            # UART0 driver (shared plug-and-play module)
 │   └── platform.rs        # Platform TLS glue for Wasmtime no_std
-├── build.rs               # Compiles WASM app, ComponentEncoder, AOT Pulley bytecode
+├── build.rs               # Compiles Wasm app, ComponentEncoder, AOT Pulley bytecode
 ├── Cargo.toml             # Firmware dependencies
 ├── rp2350.x               # RP2350 memory layout linker script
 ├── SKILLS.md              # Project conventions and lessons learned
@@ -123,9 +123,9 @@ embedded-wasm-button-rp2350/
 
 Defines the `embedded:platform` package with three interfaces (`gpio`, `button`, and `timing`) and the `button-led` world. This is the contract between guest and host — the guest calls `button.is-pressed(pin)`, `gpio.set-high(pin)`, and `timing.delay-ms(ms)` without knowing anything about the hardware. The host maps those calls to real GPIO registers and CPU cycles. The world is named `button-led` rather than `button` to avoid a WIT name collision with the `button` interface.
 
-### `wasm-app/src/lib.rs` — WASM Guest Component
+### `wasm-app/src/lib.rs` — Wasm Guest Component
 
-The WASM component compiled to `wasm32-unknown-unknown`. Uses `wit-bindgen` to generate typed bindings from the WIT definitions. Implements the `Guest` trait with a `run()` function that polls GPIO15 every 10ms and mirrors the button state to GPIO25. GPIO pins are addressed by their hardware number (e.g., 15 for button, 25 for LED). Requires `dlmalloc` as a global allocator for the canonical ABI's `cabi_realloc`.
+The Wasm component compiled to `wasm32-unknown-unknown`. Uses `wit-bindgen` to generate typed bindings from the WIT definitions. Implements the `Guest` trait with a `run()` function that polls GPIO15 every 10ms and mirrors the button state to GPIO25. GPIO pins are addressed by their hardware number (e.g., 15 for button, 25 for LED). Requires `dlmalloc` as a global allocator for the canonical ABI's `cabi_realloc`.
 
 ### `src/main.rs` — Firmware Entry Point
 
@@ -133,11 +133,11 @@ Orchestrates everything: initializes the heap (256 KiB), clocks, and hardware pe
 
 ### `src/button.rs` — GPIO Input Driver (Shared Module)
 
-Reads any number of GPIO input pins via a `critical_section::Mutex<RefCell<BTreeMap>>`. Pins are stored by their hardware GPIO number so WASM code can address them directly (e.g., `button::is_pressed(15)`). The `button::store_pin(15, pin)` registers a pin, `button::is_pressed(15)` reads it using active-low logic (`is_low()` returns `true` when the pull-up input is grounded). Accepts any type implementing `embedded_hal::digital::InputPin` — no dependency on `rp235x-hal`. Marked `#![allow(dead_code)]` — shared plug-and-play module.
+Reads any number of GPIO input pins via a `critical_section::Mutex<RefCell<BTreeMap>>`. Pins are stored by their hardware GPIO number so Wasm code can address them directly (e.g., `button::is_pressed(15)`). The `button::store_pin(15, pin)` registers a pin, `button::is_pressed(15)` reads it using active-low logic (`is_low()` returns `true` when the pull-up input is grounded). Accepts any type implementing `embedded_hal::digital::InputPin` — no dependency on `rp235x-hal`. Marked `#![allow(dead_code)]` — shared plug-and-play module.
 
 ### `src/led.rs` — GPIO Output Driver (Shared Module)
 
-Controls any number of GPIO output pins via a `critical_section::Mutex<RefCell<BTreeMap>>`. Pins are stored by their hardware GPIO number so WASM code can address them directly (e.g., `gpio::set_high(25)`). The `led::store_pin(25, pin)` registers a pin, `led::set_high(25)` / `led::set_low(25)` toggles it. Accepts any type implementing `embedded_hal::digital::OutputPin` — no dependency on `rp235x-hal`. Marked `#![allow(dead_code)]` — shared plug-and-play module.
+Controls any number of GPIO output pins via a `critical_section::Mutex<RefCell<BTreeMap>>`. Pins are stored by their hardware GPIO number so Wasm code can address them directly (e.g., `gpio::set_high(25)`). The `led::store_pin(25, pin)` registers a pin, `led::set_high(25)` / `led::set_low(25)` toggles it. Accepts any type implementing `embedded_hal::digital::OutputPin` — no dependency on `rp235x-hal`. Marked `#![allow(dead_code)]` — shared plug-and-play module.
 
 ### `src/uart.rs` — UART0 Driver (Shared Module)
 
@@ -149,7 +149,7 @@ Implements `wasmtime_tls_get()` and `wasmtime_tls_set()` using a global `AtomicP
 
 ### `build.rs` — AOT Build Script
 
-Copies the linker script (`rp2350.x` -> `memory.x`), spawns a child `cargo build` to compile `wasm-app/` to a core `.wasm` binary, encodes it as a WASM component via `ComponentEncoder` (using the `wit-bindgen` metadata embedded in the binary), then AOT-compiles the component to Pulley bytecode via Cranelift. Strips `CARGO_ENCODED_RUSTFLAGS` from the child build to prevent ARM linker flags from leaking into the WASM compilation.
+Copies the linker script (`rp2350.x` -> `memory.x`), spawns a child `cargo build` to compile `wasm-app/` to a core `.wasm` binary, encodes it as a Wasm component via `ComponentEncoder` (using the `wit-bindgen` metadata embedded in the binary), then AOT-compiles the component to Pulley bytecode via Cranelift. Strips `CARGO_ENCODED_RUSTFLAGS` from the child build to prevent ARM linker flags from leaking into the Wasm compilation.
 
 ## Prerequisites
 
@@ -199,7 +199,7 @@ cargo build --release
 This single command does everything:
 
 1. `build.rs` compiles `wasm-app/` to `wasm32-unknown-unknown` -> produces `wasm_app.wasm` (core module)
-2. `build.rs` encodes the core module as a WASM component via `ComponentEncoder`
+2. `build.rs` encodes the core module as a Wasm component via `ComponentEncoder`
 3. `build.rs` AOT-compiles the component to Pulley bytecode via Cranelift -> produces `button.cwasm`
 4. The firmware compiles for `thumbv8m.main-none-eabihf`, embedding the Pulley bytecode via `include_bytes!`
 5. The result is an ELF at `target/thumbv8m.main-none-eabihf/release/embedded-wasm-button-rp2350`
@@ -284,7 +284,7 @@ world button-led {
 
 Pin numbers are a guest-side decision. The host maps them to real hardware — the WIT interface is hardware-agnostic.
 
-### 2. The WASM Guest (`wasm-app/src/lib.rs`)
+### 2. The Wasm Guest (`wasm-app/src/lib.rs`)
 
 The guest implements the `Guest` trait generated by `wit-bindgen`:
 
@@ -322,7 +322,7 @@ The firmware boots in this sequence:
    - `uart::store_global()` -> stores UART in mutex
    - `button::store_pin(15, ...)` -> registers GPIO15 as button input (pull-up)
    - `led::store_pin(25, ...)` -> registers GPIO25 as LED output
-3. **`run_wasm()`** — Boots the WASM runtime:
+3. **`run_wasm()`** — Boots the Wasm runtime:
    ```
    create_engine()    -> Config::target("pulley32"), bare-metal settings
    create_component() -> Component::deserialize(embedded .cwasm bytes)
@@ -334,7 +334,7 @@ The firmware boots in this sequence:
 ### 4. The Call Chain
 
 ```
-WASM run()
+Wasm run()
   -> button::is_pressed(15)                  [WIT interface call]
     -> component model dispatch              [Wasmtime canonical ABI]
       -> HostState::is_pressed(pin: 15)      [button::Host trait impl]
@@ -365,7 +365,7 @@ cargo build --release
        ├── 2. Spawn: cargo build --release --target wasm32-unknown-unknown
        │         └── wasm-app/ compiles -> wasm_app.wasm (core module)
        │
-       ├── 3. ComponentEncoder encodes core module as WASM component
+       ├── 3. ComponentEncoder encodes core module as Wasm component
        │         └── Uses wit-bindgen metadata embedded in the binary
        │
        ├── 4. AOT-compile component to Pulley bytecode via Cranelift:
@@ -376,7 +376,7 @@ cargo build --release
                └── Links against memory.x for RP2350 memory layout
 ```
 
-Critical detail: `CARGO_ENCODED_RUSTFLAGS` (ARM flags like `--nmagic`, `-Tlink.x`) must be stripped from the child WASM build via `.env_remove("CARGO_ENCODED_RUSTFLAGS")`.
+Critical detail: `CARGO_ENCODED_RUSTFLAGS` (ARM flags like `--nmagic`, `-Tlink.x`) must be stripped from the child Wasm build via `.env_remove("CARGO_ENCODED_RUSTFLAGS")`.
 
 ### 6. Creating a New Project from This Template
 
@@ -406,13 +406,13 @@ Critical detail: `CARGO_ENCODED_RUSTFLAGS` (ARM flags like `--nmagic`, `-Tlink.x
 
 | Region             | Address      | Size            | Usage                                              |
 | ------------------ | ------------ | --------------- | -------------------------------------------------- |
-| Flash              | `0x10000000` | 2 MiB           | Firmware code + embedded WASM component            |
+| Flash              | `0x10000000` | 2 MiB           | Firmware code + embedded Wasm component            |
 | RAM (striped)      | `0x20000000` | 512 KiB         | Stack + heap + data                                |
-| Heap (allocated)   | —            | 256 KiB         | Wasmtime engine, store, component, WASM linear mem |
-| WASM linear memory | —            | 64 KiB (1 page) | WASM component's addressable memory                |
-| WASM stack         | —            | 4 KiB           | WASM call stack                                    |
+| Heap (allocated)   | —            | 256 KiB         | Wasmtime engine, store, component, Wasm linear mem |
+| Wasm linear memory | —            | 64 KiB (1 page) | Wasm component's addressable memory                |
+| Wasm stack         | —            | 4 KiB           | Wasm call stack                                    |
 
-> **Important:** The default WASM linker allocates 1 MB of linear memory (16 pages). This exceeds the RP2350's total RAM. The `wasm-app/.cargo/config.toml` explicitly sets `--initial-memory=65536` (1 page) and `stack-size=4096`.
+> **Important:** The default Wasm linker allocates 1 MB of linear memory (16 pages). This exceeds the RP2350's total RAM. The `wasm-app/.cargo/config.toml` explicitly sets `--initial-memory=65536` (1 page) and `stack-size=4096`.
 
 ## Extending the Project
 
@@ -468,26 +468,26 @@ impl Guest for ButtonApp {
 }
 ```
 
-Rebuild and reflash — only the WASM component changes.
+Rebuild and reflash — only the Wasm component changes.
 
 ## Troubleshooting
 
 | Symptom                                         | Cause                                  | Fix                                                                              |
 | ----------------------------------------------- | -------------------------------------- | -------------------------------------------------------------------------------- |
-| LED not responding to button                    | WASM linear memory too large for heap  | Ensure `wasm-app/.cargo/config.toml` has `--initial-memory=65536`                |
+| LED not responding to button                    | Wasm linear memory too large for heap  | Ensure `wasm-app/.cargo/config.toml` has `--initial-memory=65536`                |
 | No UART output                                  | Wiring or baud rate wrong              | GPIO0->adapter RX, GPIO1->adapter TX, 115200 8N1                                 |
 | `Component::deserialize` panics                 | Config mismatch build vs device        | Both engines must have identical `Config` settings                               |
 | `Component::deserialize` panics                 | `default-features` mismatch            | Both `[dependencies]` and `[build-dependencies]` need `default-features = false` |
-| Build fails with `unknown argument: --nmagic`   | Parent rustflags leaking to WASM build | Ensure `build.rs` has `.env_remove("CARGO_ENCODED_RUSTFLAGS")`                   |
+| Build fails with `unknown argument: --nmagic`   | Parent rustflags leaking to Wasm build | Ensure `build.rs` has `.env_remove("CARGO_ENCODED_RUSTFLAGS")`                   |
 | Build fails with `extern blocks must be unsafe` | Rust 2024 edition                      | Use `unsafe extern { ... }` with `safe fn` declarations                          |
 | `picotool` can't find device                    | Not in bootloader mode                 | Hold BOOTSEL while plugging in USB                                               |
-| `cargo build` doesn't pick up WASM changes      | Cached build artifacts                 | Run `cargo clean && cargo build --release`                                       |
+| `cargo build` doesn't pick up Wasm changes      | Cached build artifacts                 | Run `cargo clean && cargo build --release`                                       |
 | ComponentEncoder fails                          | wit-bindgen metadata missing           | Ensure wasm-app uses `wit-bindgen` with `macros` + `realloc` features            |
 | Button always reads as pressed/released         | Wrong GPIO or missing pull-up          | Ensure GPIO15 is `into_pull_up_input()` and button connects pin to GND           |
 
 ## Tutorial
 
-A complete line-by-line code walkthrough is available in [TUTORIAL.md](TUTORIAL.md). It covers every Rust source file and every function in the project, written as a teaching resource for learning embedded WASM development from scratch.
+A complete line-by-line code walkthrough is available in [TUTORIAL.md](TUTORIAL.md). It covers every Rust source file and every function in the project, written as a teaching resource for learning embedded Wasm development from scratch.
 
 <br>
 

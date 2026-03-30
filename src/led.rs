@@ -6,7 +6,7 @@
 //!
 //! Provides control of multiple GPIO output pins via a critical-section mutex.
 //! Pins are stored by their hardware GPIO number (e.g., 25 for the onboard LED)
-//! so WASM code can address them directly. Accepts any pin that implements
+//! so Wasm code can address them directly. Accepts any pin that implements
 //! `OutputPin`. Designed as a shared plug-and-play module identical across repos.
 
 #![allow(dead_code)]

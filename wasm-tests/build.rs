@@ -4,13 +4,13 @@
 //!
 //! # Build Script for wasm-tests Crate
 //!
-//! Compiles the WASM button application, encodes it as a WASM component,
+//! Compiles the Wasm button application, encodes it as a Wasm component,
 //! and places it in `OUT_DIR` for integration tests via `include_bytes!`.
 
 use std::process::Command;
 use wit_component::ComponentEncoder;
 
-/// Compiles the WASM button application for the `wasm32-unknown-unknown` target.
+/// Compiles the Wasm button application for the `wasm32-unknown-unknown` target.
 ///
 /// # Panics
 ///
@@ -21,14 +21,14 @@ fn compile_wasm_app() {
         .current_dir("../wasm-app")
         .env_remove("CARGO_ENCODED_RUSTFLAGS")
         .status()
-        .expect("failed to build WASM app");
-    assert!(status.success(), "WASM app compilation failed");
+        .expect("failed to build Wasm app");
+    assert!(status.success(), "Wasm app compilation failed");
 }
 
-/// Encodes the core WASM module as a component and writes to `OUT_DIR`.
+/// Encodes the core Wasm module as a component and writes to `OUT_DIR`.
 ///
-/// Reads the core WASM binary (which contains `wit-bindgen` component type
-/// metadata), wraps it as a WASM component via `ComponentEncoder`, and
+/// Reads the core Wasm binary (which contains `wit-bindgen` component type
+/// metadata), wraps it as a Wasm component via `ComponentEncoder`, and
 /// writes the component binary for `include_bytes!`.
 ///
 /// # Panics
@@ -38,7 +38,7 @@ fn encode_component() {
     let out_dir = std::env::var("OUT_DIR").expect("OUT_DIR not set");
     let core_wasm =
         std::fs::read("../wasm-app/target/wasm32-unknown-unknown/release/wasm_app.wasm")
-            .expect("read core WASM binary");
+            .expect("read core Wasm binary");
     let component = ComponentEncoder::default()
         .module(&core_wasm)
         .expect("set core module")
@@ -56,7 +56,7 @@ fn print_rerun_triggers() {
     println!("cargo:rerun-if-changed=build.rs");
 }
 
-/// Build script entry point that compiles the WASM app for testing.
+/// Build script entry point that compiles the Wasm app for testing.
 fn main() {
     compile_wasm_app();
     encode_component();

@@ -1,4 +1,4 @@
-# Tutorial: Embedded WASM Button — A Complete Code Walkthrough
+# Tutorial: Embedded Wasm Button — A Complete Code Walkthrough
 
 This tutorial is a line-by-line, function-by-function guide through every Rust source file in the **embedded-wasm-button-rp2350** project. By the end, you will understand how a WebAssembly component is compiled, deployed, and executed on an RP2350 microcontroller to read a button and control an LED — entirely in bare-metal Rust with no operating system.
 
@@ -9,15 +9,15 @@ The walkthrough follows this order:
 3. [UART Driver](#3-uart-driver-srcuartrs) — serial output for diagnostics
 4. [LED Driver](#4-led-driver-srcledrs) — GPIO output pin management
 5. [Button Driver](#5-button-driver-srcbuttonrs) — GPIO input pin reading
-6. [Firmware Entry Point](#6-firmware-entry-point-srcmainrs) — hardware init, WASM runtime, panic handler
+6. [Firmware Entry Point](#6-firmware-entry-point-srcmainrs) — hardware init, Wasm runtime, panic handler
 7. [Build Script](#7-build-script-buildrs) — AOT compilation pipeline
-8. [WASM Guest Application](#8-wasm-guest-application-wasm-appsrclibrs) — the button component itself
+8. [Wasm Guest Application](#8-wasm-guest-application-wasm-appsrclibrs) — the button component itself
 
 ---
 
 ## 1. WIT Interface Definition (`wit/world.wit`)
 
-Before any Rust code, the project defines a **WIT (WebAssembly Interface Type)** file. WIT is a language-neutral interface description that the WebAssembly Component Model uses to type-check function calls between a host (the firmware) and a guest (the WASM module).
+Before any Rust code, the project defines a **WIT (WebAssembly Interface Type)** file. WIT is a language-neutral interface description that the WebAssembly Component Model uses to type-check function calls between a host (the firmware) and a guest (the Wasm module).
 
 ```wit
 package embedded:platform;
@@ -32,7 +32,7 @@ interface gpio {
 }
 ```
 
-The `gpio` interface defines two functions. The `set-high` takes a pin number and turns it on. The `set-low` takes a pin number and turns it off. The pin number is a `u32` because WIT's type system maps cleanly to WASM's 32-bit integer type. These are **imports** — the guest calls them, and the host provides the implementations.
+The `gpio` interface defines two functions. The `set-high` takes a pin number and turns it on. The `set-low` takes a pin number and turns it off. The pin number is a `u32` because WIT's type system maps cleanly to Wasm's 32-bit integer type. These are **imports** — the guest calls them, and the host provides the implementations.
 
 ```wit
 interface button {
@@ -59,7 +59,7 @@ world button-led {
 }
 ```
 
-A **world** is a complete contract. The `button-led` world says: "I need `gpio`, `button`, and `timing` from the host, and I will provide a `run` function." The host instantiates the component, calls `run`, and the WASM code takes over — calling back into the three interfaces as needed. The world is named `button-led` rather than `button` because WIT has a name collision when the world shares its name with one of its imported interfaces — `wit-bindgen` cannot resolve `embedded::platform::button` when the world itself is also called `button`. The hyphenated name `button-led` becomes `ButtonLed` in the generated Rust bindings.
+A **world** is a complete contract. The `button-led` world says: "I need `gpio`, `button`, and `timing` from the host, and I will provide a `run` function." The host instantiates the component, calls `run`, and the Wasm code takes over — calling back into the three interfaces as needed. The world is named `button-led` rather than `button` because WIT has a name collision when the world shares its name with one of its imported interfaces — `wit-bindgen` cannot resolve `embedded::platform::button` when the world itself is also called `button`. The hyphenated name `button-led` becomes `ButtonLed` in the generated Rust bindings.
 
 ---
 
@@ -104,7 +104,7 @@ pub extern "C" fn wasmtime_tls_set(ptr: *mut u8) {
 }
 ```
 
-This is the setter counterpart. Wasmtime calls it to store its runtime context pointer before executing WASM code, and clears it (stores null) when execution completes. Together, these two functions are the minimum platform glue that Wasmtime requires to run on bare metal.
+This is the setter counterpart. Wasmtime calls it to store its runtime context pointer before executing Wasm code, and clears it (stores null) when execution completes. Together, these two functions are the minimum platform glue that Wasmtime requires to run on bare metal.
 
 ---
 
@@ -339,7 +339,7 @@ Iterates over a byte slice, writing each byte with `\n` to `\r\n` conversion, us
 
 ## 4. LED Driver (`src/led.rs`)
 
-The LED driver manages GPIO output pins by their hardware pin number. It is designed for the Component Model architecture: the WASM guest says "set pin 25 high" and the host firmware looks up pin 25 in this module and drives it high.
+The LED driver manages GPIO output pins by their hardware pin number. It is designed for the Component Model architecture: the Wasm guest says "set pin 25 high" and the host firmware looks up pin 25 in this module and drives it high.
 
 ### Imports and Type Alias
 
@@ -395,7 +395,7 @@ pub fn set_high(gpio_num: u8) {
 }
 ```
 
-Looks up the pin by number, calls `set_high()` on the trait object, and ignores the `Result` (which is `Infallible` — it cannot fail). The `.expect("pin not registered")` panic message provides clear diagnostics if a WASM guest tries to control a pin that was never registered by the host.
+Looks up the pin by number, calls `set_high()` on the trait object, and ignores the `Result` (which is `Infallible` — it cannot fail). The `.expect("pin not registered")` panic message provides clear diagnostics if a Wasm guest tries to control a pin that was never registered by the host.
 
 ### `set_low`
 
@@ -416,7 +416,7 @@ Identical to `set_high` but drives the pin low. Together, `set_high` and `set_lo
 
 ## 5. Button Driver (`src/button.rs`)
 
-The button driver is the input counterpart of the LED driver. It manages GPIO input pins by their hardware pin number using the same type-erased pin map pattern. The WASM guest says "is pin 15 pressed?" and the host firmware looks up pin 15 in this module and reads its state.
+The button driver is the input counterpart of the LED driver. It manages GPIO input pins by their hardware pin number using the same type-erased pin map pattern. The Wasm guest says "is pin 15 pressed?" and the host firmware looks up pin 15 in this module and reads its state.
 
 ### Imports and Type Alias
 
@@ -478,7 +478,7 @@ Reads the pin state and returns whether the button is pressed. The function call
 
 ## 6. Firmware Entry Point (`src/main.rs`)
 
-This is the largest file and the heart of the firmware. It initializes hardware, sets up the WASM runtime, and bridges the WIT interfaces to real hardware.
+This is the largest file and the heart of the firmware. It initializes hardware, sets up the Wasm runtime, and bridges the WIT interfaces to real hardware.
 
 ### Crate Attributes and Module Declarations
 
@@ -514,7 +514,7 @@ use wasmtime::component::{Component, HasSelf};
 use wasmtime::{Config, Engine, Store};
 ```
 
-`PanicInfo` is the type passed to the panic handler. `LlffHeap` is a linked-list first-fit heap allocator designed for embedded systems. The `hal` is the RP2350 hardware abstraction layer. The Wasmtime imports bring in the Component Model's core types: `Component` (a precompiled WASM module), `Engine` (the execution environment), `Store` (per-instance state), and `HasSelf` (a marker type used for linker registration).
+`PanicInfo` is the type passed to the panic handler. `LlffHeap` is a linked-list first-fit heap allocator designed for embedded systems. The `hal` is the RP2350 hardware abstraction layer. The Wasmtime imports bring in the Component Model's core types: `Component` (a precompiled Wasm module), `Engine` (the execution environment), `Store` (per-instance state), and `HasSelf` (a marker type used for linker registration).
 
 ### WIT Bindings Generation
 
@@ -539,7 +539,7 @@ The world name `button-led` becomes `ButtonLed` in PascalCase. If the world were
 static HEAP: Heap = Heap::empty();
 ```
 
-Declares the heap allocator as a global static. It starts empty and is initialized by `init_heap` with a 256 KiB memory region. Wasmtime uses the heap extensively — for the `Store`, `Component` metadata, and WASM linear memory.
+Declares the heap allocator as a global static. It starts empty and is initialized by `init_heap` with a 256 KiB memory region. Wasmtime uses the heap extensively — for the `Store`, `Component` metadata, and Wasm linear memory.
 
 ### Constants
 
@@ -583,7 +583,7 @@ impl embedded::platform::gpio::Host for HostState {
 }
 ```
 
-These are the host-side implementations of the WIT `gpio` interface. When the WASM guest calls `gpio::set_high(25)`, Wasmtime routes it here. The function delegates to `led::set_high` to drive the physical GPIO pin, then calls `write_gpio_msg` to log the state change over UART.
+These are the host-side implementations of the WIT `gpio` interface. When the Wasm guest calls `gpio::set_high(25)`, Wasmtime routes it here. The function delegates to `led::set_high` to drive the physical GPIO pin, then calls `write_gpio_msg` to log the state change over UART.
 
 ```rust
 impl embedded::platform::button::Host for HostState {
@@ -593,7 +593,7 @@ impl embedded::platform::button::Host for HostState {
 }
 ```
 
-The host-side implementation of the WIT `button` interface. When the WASM guest calls `button::is_pressed(15)`, Wasmtime routes it here. The function delegates to `button::is_pressed`, which reads GPIO15 and returns `true` if pressed (active-low). No UART logging is done for button reads to avoid flooding the output at 10ms polling intervals.
+The host-side implementation of the WIT `button` interface. When the Wasm guest calls `button::is_pressed(15)`, Wasmtime routes it here. The function delegates to `button::is_pressed`, which reads GPIO15 and returns `true` if pressed (active-low). No UART logging is done for button reads to avoid flooding the output at 10ms polling intervals.
 
 ```rust
 impl embedded::platform::timing::Host for HostState {
@@ -757,7 +757,7 @@ Creates the Wasmtime execution engine. Every setting here is critical and must m
 - `memory_guard_size(0)` — disables guard pages. No virtual memory means no guard pages.
 - `memory_reservation_for_growth(0)` — no pre-reserved growth space.
 - `guard_before_linear_memory(false)` — no guard page before linear memory.
-- `max_wasm_stack(16384)` — limits the WASM stack to 16 KiB to fit in the constrained RAM.
+- `max_wasm_stack(16384)` — limits the Wasm stack to 16 KiB to fit in the constrained RAM.
 
 ### `create_component`
 
@@ -798,7 +798,7 @@ fn execute_wasm(
 }
 ```
 
-Instantiates the WASM component and calls the exported `run` function. `ButtonLed::instantiate` creates a live instance of the component with all imports resolved. The `call_run` invokes the guest's `run` function, which enters the infinite button-polling loop. This function only returns if the WASM guest's `run` function returns — which in this project it never does.
+Instantiates the Wasm component and calls the exported `run` function. `ButtonLed::instantiate` creates a live instance of the component with all imports resolved. The `call_run` invokes the guest's `run` function, which enters the infinite button-polling loop. This function only returns if the Wasm guest's `run` function returns — which in this project it never does.
 
 ### `run_wasm`
 
@@ -815,7 +815,7 @@ fn run_wasm() -> ! {
 }
 ```
 
-Orchestrates the WASM runtime startup. Creates the engine, deserializes the component, creates a store with the host state, builds the linker, and executes the WASM component. The trailing `loop` is a safety net — `execute_wasm` should never return because the guest's `run` function loops forever.
+Orchestrates the Wasm runtime startup. Creates the engine, deserializes the component, creates a store with the host state, builds the linker, and executes the Wasm component. The trailing `loop` is a safety net — `execute_wasm` should never return because the guest's `run` function loops forever.
 
 ### `main`
 
@@ -828,13 +828,13 @@ fn main() -> ! {
 }
 ```
 
-The firmware entry point. `#[hal::entry]` is the RP2350 HAL's entry point attribute (built on `cortex-m-rt`). It sets up the stack pointer and vector table, then calls this function. The boot sequence is: initialize the heap allocator, initialize all hardware peripherals, then start the WASM runtime. The `-> !` return type means this function never returns — the WASM guest's button-polling loop runs forever.
+The firmware entry point. `#[hal::entry]` is the RP2350 HAL's entry point attribute (built on `cortex-m-rt`). It sets up the stack pointer and vector table, then calls this function. The boot sequence is: initialize the heap allocator, initialize all hardware peripherals, then start the Wasm runtime. The `-> !` return type means this function never returns — the Wasm guest's button-polling loop runs forever.
 
 ---
 
 ## 7. Build Script (`build.rs`)
 
-The build script runs on the **host machine** (your development computer) during `cargo build`. It compiles the WASM guest application and AOT-compiles it to Pulley bytecode so the device does not need a WASM compiler.
+The build script runs on the **host machine** (your development computer) during `cargo build`. It compiles the Wasm guest application and AOT-compiles it to Pulley bytecode so the device does not need a Wasm compiler.
 
 ### Imports
 
@@ -882,18 +882,18 @@ fn compile_wasm_app() {
         .current_dir("wasm-app")
         .env_remove("CARGO_ENCODED_RUSTFLAGS")
         .status()
-        .expect("failed to build WASM app");
-    assert!(status.success(), "WASM app compilation failed");
+        .expect("failed to build Wasm app");
+    assert!(status.success(), "Wasm app compilation failed");
 }
 ```
 
-Spawns a child `cargo build` process to compile the WASM guest application. Key details:
+Spawns a child `cargo build` process to compile the Wasm guest application. Key details:
 
 - `--target wasm32-unknown-unknown` compiles to WebAssembly instead of the host architecture.
-- `.current_dir("wasm-app")` runs the build in the WASM sub-crate's directory.
-- `.env_remove("CARGO_ENCODED_RUSTFLAGS")` is critical — without this, the parent build's RUSTFLAGS (which contain ARM linker flags like `--nmagic` and `-Tlink.x`) leak into the child build and cause WASM linker errors.
+- `.current_dir("wasm-app")` runs the build in the Wasm sub-crate's directory.
+- `.env_remove("CARGO_ENCODED_RUSTFLAGS")` is critical — without this, the parent build's RUSTFLAGS (which contain ARM linker flags like `--nmagic` and `-Tlink.x`) leak into the child build and cause Wasm linker errors.
 
-The output is a core WASM module at `wasm-app/target/wasm32-unknown-unknown/release/wasm_app.wasm`.
+The output is a core Wasm module at `wasm-app/target/wasm32-unknown-unknown/release/wasm_app.wasm`.
 
 ### `create_pulley_engine`
 
@@ -919,7 +919,7 @@ Creates a Wasmtime engine for AOT cross-compilation. Every setting **must be ide
 ```rust
 fn compile_wasm_to_pulley(out: &Path) {
     let wasm_path = "wasm-app/target/wasm32-unknown-unknown/release/wasm_app.wasm";
-    let wasm_bytes = std::fs::read(wasm_path).expect("read WASM binary");
+    let wasm_bytes = std::fs::read(wasm_path).expect("read Wasm binary");
     let component_bytes = ComponentEncoder::default()
         .module(&wasm_bytes)
         .expect("set core module")
@@ -936,8 +936,8 @@ fn compile_wasm_to_pulley(out: &Path) {
 
 This is the core of the AOT compilation pipeline and the most important function in the build script. It performs three transformations:
 
-1. **Read the core WASM module** — the raw `.wasm` file produced by `cargo build` in the previous step.
-2. **Encode as a component** — `ComponentEncoder` reads the type metadata that `wit-bindgen` embedded in the core module and wraps it as a proper WASM component with typed imports and exports.
+1. **Read the core Wasm module** — the raw `.wasm` file produced by `cargo build` in the previous step.
+2. **Encode as a component** — `ComponentEncoder` reads the type metadata that `wit-bindgen` embedded in the core module and wraps it as a proper Wasm component with typed imports and exports.
 3. **AOT-compile to Pulley bytecode** — `precompile_component` runs Cranelift (a code generator) targeting the `pulley32` architecture, producing serialized bytecode that the Pulley interpreter can execute without any compilation on the device.
 
 The result is written to `button.cwasm`, which the firmware includes via `include_bytes!`.
@@ -954,7 +954,7 @@ fn print_rerun_triggers() {
 }
 ```
 
-Tells cargo which files should trigger a rebuild of the build script. Without these, cargo might cache the build script output and miss changes to the WASM guest code or WIT definitions.
+Tells cargo which files should trigger a rebuild of the build script. Without these, cargo might cache the build script output and miss changes to the Wasm guest code or WIT definitions.
 
 ### `main`
 
@@ -968,11 +968,11 @@ fn main() {
 }
 ```
 
-The build script entry point. The sequence is: set up the output directory, write the linker script, compile the WASM guest to a core module, transform and AOT-compile it to Pulley bytecode, and register file change triggers.
+The build script entry point. The sequence is: set up the output directory, write the linker script, compile the Wasm guest to a core module, transform and AOT-compile it to Pulley bytecode, and register file change triggers.
 
 ---
 
-## 8. WASM Guest Application (`wasm-app/src/lib.rs`)
+## 8. Wasm Guest Application (`wasm-app/src/lib.rs`)
 
 This is the WebAssembly component that runs **inside** the Wasmtime runtime on the RP2350. It has no access to hardware — only to the WIT interfaces the host provides.
 
@@ -982,7 +982,7 @@ This is the WebAssembly component that runs **inside** the Wasmtime runtime on t
 #![no_std]
 ```
 
-The WASM guest is `no_std` because the `wasm32-unknown-unknown` target has no operating system. It uses `core` for language primitives and `alloc` for the heap.
+The Wasm guest is `no_std` because the `wasm32-unknown-unknown` target has no operating system. It uses `core` for language primitives and `alloc` for the heap.
 
 ```rust
 extern crate alloc;
@@ -997,7 +997,7 @@ Enables heap allocation. The canonical ABI (the calling convention between host 
 static ALLOC: dlmalloc::GlobalDlmalloc = dlmalloc::GlobalDlmalloc;
 ```
 
-The `dlmalloc` is a port of Doug Lea's malloc to Rust. It is the only allocator that works with `wasm32-unknown-unknown` in `no_std` because it implements its own `sbrk` by growing the WASM linear memory. The `global` feature flag makes it a `#[global_allocator]`.
+The `dlmalloc` is a port of Doug Lea's malloc to Rust. It is the only allocator that works with `wasm32-unknown-unknown` in `no_std` because it implements its own `sbrk` by growing the Wasm linear memory. The `global` feature flag makes it a `#[global_allocator]`.
 
 ### Imports and Bindings
 
@@ -1043,7 +1043,7 @@ impl Guest for ButtonApp {
 }
 ```
 
-This is the entire application logic. It polls the button on GPIO15 every 10ms and mirrors its state to the LED on GPIO25. Each call to `button::is_pressed` or `gpio::set_high` crosses the WASM boundary — the Pulley interpreter pauses, Wasmtime dispatches the call to the corresponding `HostState` method, which reads or drives the physical pin, then returns control to the interpreter.
+This is the entire application logic. It polls the button on GPIO15 every 10ms and mirrors its state to the LED on GPIO25. Each call to `button::is_pressed` or `gpio::set_high` crosses the Wasm boundary — the Pulley interpreter pauses, Wasmtime dispatches the call to the corresponding `HostState` method, which reads or drives the physical pin, then returns control to the interpreter.
 
 The pin numbers (`15` and `25`) are **guest-side decisions**. The WIT interface is hardware-agnostic — the guest chooses which pins to use, and the host maps them to real hardware. A different guest could use different pins without any firmware changes. The 10ms polling interval provides basic debouncing — mechanical buttons bounce for roughly 5–20ms, and the 10ms poll period means a bounce is unlikely to cause a visible flicker.
 
@@ -1058,7 +1058,7 @@ fn panic(_info: &PanicInfo) -> ! {
 }
 ```
 
-The WASM guest's panic handler. Unlike the firmware's panic handler, it cannot write to a UART — it has no hardware access. It simply enters an infinite loop using `spin_loop()` (a hint to the CPU to reduce power consumption while spinning). In practice, a panic in the WASM guest would cause Wasmtime to trap, which would be caught by the firmware's panic handler.
+The Wasm guest's panic handler. Unlike the firmware's panic handler, it cannot write to a UART — it has no hardware access. It simply enters an infinite loop using `spin_loop()` (a hint to the CPU to reduce power consumption while spinning). In practice, a panic in the Wasm guest would cause Wasmtime to trap, which would be caught by the firmware's panic handler.
 
 ---
 
@@ -1067,10 +1067,10 @@ The WASM guest's panic handler. Unlike the firmware's panic handler, it cannot w
 1. The RP2350 powers on and the boot ROM reads `IMAGE_DEF` from `.start_block`
 2. `main()` calls `init_heap()` to set up the 256 KiB heap
 3. `init_hardware()` configures clocks (150 MHz), UART0 (115200 baud), GPIO15 (pull-up input), and GPIO25 (push-pull output)
-4. `run_wasm()` creates the Pulley engine and deserializes the precompiled WASM component
+4. `run_wasm()` creates the Pulley engine and deserializes the precompiled Wasm component
 5. `execute_wasm()` instantiates the component and calls `run`
 6. The guest's `run()` enters an infinite loop: `is_pressed(15)` -> `set_high(25)` or `set_low(25)` -> `delay_ms(10)`
-7. Each `is_pressed` call crosses the WASM boundary into the host, reads GPIO15, and returns a `bool`
+7. Each `is_pressed` call crosses the Wasm boundary into the host, reads GPIO15, and returns a `bool`
 8. Each `set_high`/`set_low` call crosses the boundary, drives the LED, and logs to UART
 9. Each `delay_ms` call crosses the boundary and spins for the specified number of CPU cycles
 10. The button controls the LED. Forever.
@@ -1086,7 +1086,7 @@ The following references cover every major crate and specification used in this 
 - [cortex-m-rt](https://docs.rs/cortex-m-rt) — Cortex-M startup runtime (reset vector, memory init)
 - [embedded-hal](https://docs.rs/embedded-hal) — hardware abstraction traits (GPIO, UART, SPI, I2C)
 - [embedded-alloc](https://docs.rs/embedded-alloc) — heap allocator for `no_std` environments
-- [Cranelift](https://cranelift.dev) — compiler backend used for AOT WASM compilation ([API docs](https://docs.rs/cranelift-codegen))
+- [Cranelift](https://cranelift.dev) — compiler backend used for AOT Wasm compilation ([API docs](https://docs.rs/cranelift-codegen))
 - [Pulley](https://docs.rs/pulley-interpreter) — Wasmtime's portable interpreter bytecode format
 - [fugit](https://docs.rs/fugit) — type-safe time units for embedded (baud rates, clock frequencies)
 - [critical-section](https://docs.rs/critical-section) — cross-platform interrupt-safe mutual exclusion

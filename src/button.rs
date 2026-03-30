@@ -6,7 +6,7 @@
 //!
 //! Provides reading of multiple GPIO input pins via a critical-section mutex.
 //! Pins are stored by their hardware GPIO number (e.g., 15 for a button)
-//! so WASM code can address them directly. Accepts any pin that implements
+//! so Wasm code can address them directly. Accepts any pin that implements
 //! `InputPin`. Designed as a shared plug-and-play module identical across repos.
 
 #![allow(dead_code)]
