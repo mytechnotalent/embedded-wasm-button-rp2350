@@ -490,8 +490,6 @@ Rebuild and reflash — only the Wasm component changes.
 
 A complete line-by-line code walkthrough is available in [TUTORIAL.md](TUTORIAL.md). It covers every Rust source file and every function in the project, written as a teaching resource for learning embedded Wasm development from scratch.
 
-<br>
-
 ## Reverse Engineering
 
 A comprehensive reverse engineering analysis of the release ELF binary is available in [RE.md](RE.md). It covers every layer — ELF structure, ARM Thumb-2 firmware, Wasmtime runtime internals, the Pulley interpreter dispatch loop, the embedded cwasm blob, full Pulley ISA reference, complete bytecode disassembly, and a Ghidra analysis walkthrough.
